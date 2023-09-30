@@ -1,0 +1,132 @@
+---
+title: "nmer_OriginalHomeworkCode_02"
+author: "Nicole Merullo"
+date: "`r Sys.Date()`" # This is a nice addition to get the current date whenever the html is knitted. 
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc: true
+---
+```{r titimonkey, echo=FALSE, fig.align='center', fig.cap='Cinnamon, the titi monkey from the Denver Zoo', out.width='25%'}
+knitr::include_graphics('~/Documents/GitHub/AN588-Week-3-nmer/titimonkey1.png') 
+
+##I HAD TO CHANGE THE LOCATION OF THE PHOTO TO BE WHERE IT IS LOCATED ON MY COMPUTER IN ORDER FOR IT TO WORK (:
+```
+
+------------
+Peer Commentary
+#I like your code to get the image to load on the knitted file. Looking at this code along with the internet/textbooks helped me add my own photo as I was having a lot of issues with it. 
+--------------
+
+# Challenges (PEER COMMENTARY THROUGHOUT THIS SECTION)
+1. I first tried to use in line html code to insert the titi monkey photo but could not quite crack that. Eventually I found a way to load in the image in a code chunk and I liked the way that looked and was able to center it easily.
+2. I tried using library(prettydoc) to load in the html themes for the markdown (with include=FALSE in the chunk so it wouldn't show up in the knitted html) but that returned an error when knitting because the output was being read before the library command was being read later on down in the file. I used the R Markdown Definitive Guide to format the YAML for the prettydoc themes and table of contents. #Yeah, I had to google this in order to figure out how to get the prettydoc theme to work in the YAML.
+3. At first, I was having trouble translating the previous examples of the poisson distribution to the first question. The previous examples gave ranges for x but the first question didn't have an upper limit and this stumped me! I decided to use the PMF and plug in the values to start with at least just getting the probability of 8 calls in one session (which led to challenge 4...).
+4. When I used hte PMF, I kept getting a number greater than 1, which meant it wasn't a probability (a vlue between 0 and 1). I think I was getting something like 21. I kept checking it over and over and thought I had it right. Eventually I asked Jimmy to check my work and even he thought it looked okay at FIRST, but when we looked at it again he realized I had switched the x and the lambda values in the exp() command. When I ran it again the right way around, it worked.
+5. This still didn't solve the problem though that I only had exactly 8 calls and not greater than 8 calls. I thought maybe I could do the complement (1-P(8)) of the probability of exactly 8 calls, but talking this through with Jimmy, he pointed out that I would return EVERYTHING above and below 8 calls. What I really needed was the right part of the plot after 8 (visualizing in my mind). I looked at the documentation for ppois() and saw that the argument lower.tail = FALSE returns the probability of X > x (not equal to!). #Yes! I had to google this in order to figure it out. I had a hard time understanding what the lower tail and upper tail meant. Once I realized that if you did lower.tail=FALSE, it would look at the values between 8 and 15 and calculate that for probability, I was able to get the right answer. 
+
+# Homework 2
+
+Every Saturday, at the same time, a primatologist goes and sits in the forest in the morning and listens for titi monkey calls, counting the number of calls they hear in a 2 hour window from 5am to 7am. Based on previous knowledge, she believes that the mean number calls she will hear in that time is exactly 15. Let X represent the appropriate Poisson random variable of the number of calls heard in each monitoring session.
+
+**Poisson Distribution: f(x)=((l^x)(exp(-l)))/(factorial(x))**
+
+## >8 Calls
+What is the probability that she will hear more than 8 calls during any given session?
+
+```{r >8Calls, echo=TRUE}
+l <- 15
+Peight <- ((l^8)*exp(-l))/factorial(8)
+Peight
+#this is for exactly 8 but need to know more than 8
+ppois(8, l, lower.tail = FALSE) # This is more than 8
+```
+
+The probability of just 8 is pretty small, but the probability of more than 8 is very high and this makes sense as this is apporaching the mean and inclusive of anything higher than that. 
+
+## 0 Calls
+What is the probability that she will hear no calls in a session?
+
+```{r 0Calls, echo=TRUE}
+PZero <- ((l^0)*exp(-l))/factorial(0)
+PZero #really small approaching zero
+```
+
+
+----------------------
+Peer Commentary
+#To find the value of a specific amount of calls, you can also use the dpois function. 
+For example:
+
+```{r}
+dpois(0,15)
+```
+
+#See, you get the same answer :) 
+
+#You can also do this to find the answer for 3 calls!
+--------------------------
+
+
+Again tthis makes sense because poisson distributions tend to have right skew and having zero calls in a session would be extremely unlikely!
+
+## 3 Calls
+What is the probability that she will hear exactly 3 calls in a session?
+
+```{r 3Calls, echo=TRUE}
+PThree <- ((l^3)*exp(-l))/factorial(3)
+PThree
+```
+
+This number is a little bigger than the probability of 0 calls in a session but it is still approaching 0.
+
+## Plotting the PMF 0-30
+Plot the relevant Poisson mass function over the values in range 0 ≤ x ≤ 30.
+
+```{r PMF, echo=TRUE}
+x <- 0:30
+calls <- dpois(x = x, lambda = l)
+barplot(calls, names.arg = x, space = 0, xlab = "Titi Calls", 
+        ylab = "Probability of # of Calls", 
+        main = "Probability Mass Function of Titi Calls")
+```
+
+This plot reflects some of the results we got above - 0 calls isn't even visible on here, 3 calls is barely visible above zero. Anything over 8 is most of the probability.
+
+## Simulate 104 Mornings
+Simulate 104 results from this distribution (i.e., 2 years of Saturday monitoring sessions).
+
+```{r 104Mornings, echo=TRUE}
+mornings <- 104
+years <- rpois(mornings, l)
+years
+```
+
+------------------
+Peer Commentary
+#You can also just use years <- rpois(104,15) to make it a more simple code -- I never thought to do it how you did it though - it gets the same results. I like looking at your codes because they allow me to have new ideas on how to do my codes and how to get things to work. 
+----------------
+
+The years variable contains simulated numbers titi calls over 104 mornings (given the mean is 15).
+
+## Plot a Histogram
+Plot the simulated results using hist() and use xlim() to set the horizontal limits to be from 0 to 30. How does your histogram compare to the shape of the probability mass function you plotted above?
+
+```{r Hist, echo=TRUE}
+hist(years, breaks = c(0:30), probability = TRUE, #I like that you used breaks in your histogram. It makes it look nicer than mine does!
+     main = "Probability of Titi Calls in 2 years", 
+     xlab = "Calls", ylab = "probability", xlim = range(0:30)) #I didn't include the word range in my code. I'm wondering if that is why mine is different. Yours seems right, so I will definitely be adding the word range to my xlim. 
+```
+
+-----------------
+Peer Commentary
+#Okay, yeah I thought the x axis was calls. I left my y axis labeled as frequency, but I will definitely be changing the name to probability! 
+------------------
+
+The histogram peaks close to the average (lambda value) at 15 and has right skew like the pmf. However, it is more varied because the numbers were random.
+
+-----------------
+Peer Commentary
+#Overall, great job!!
+-----------------
